@@ -4,8 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
                  // slow = 0 element = 8.6f  // normal = 1st element = 10.4f
 public enum Speeds { Slow, Normal, Fast, Faster, Fastest};
-public enum GameMode { Cube = 0, Ship = 1};
-public enum Gravity { Upright = 1, Upside = -1 };
+public enum GameMode { Cube, Ship};
 public class Movement : MonoBehaviour
 {
     public Speeds CurrentSpeed;
@@ -28,14 +27,25 @@ public class Movement : MonoBehaviour
     private void Update()
     {                                               // 1/10 FPS = 0.1 time.deltatime, so won't move too fast           
         transform.position += Vector3.right * SpeedValues[(int)CurrentSpeed] * Time.deltaTime;
+        if(CurrGameMode == GameMode.Cube)
+        {
+            Cube();
+        }
+        else if(CurrGameMode == GameMode.Ship)
+        {
+            //
+        }
+    }
 
+    void Cube()
+    {
         if (OnGround())
         {
             Vector3 Rotation = Sprite.rotation.eulerAngles;
             Rotation.z = Mathf.Round(Rotation.z / 90) * 90;
             Sprite.rotation = Quaternion.Euler(Rotation);
 
-            if(Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0))
             {
                 rb.velocity = Vector2.zero;
                 rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
@@ -48,22 +58,26 @@ public class Movement : MonoBehaviour
     }
     bool OnGround()
     {
-        return Physics2D.OverlapCircle(GroundCheckTransform.position, GroundCheckRadius, GroundMask);
+        return Physics2D.OverlapBox(GroundCheckTransform.position, Vector2.right * 1.1f + Vector2.up * GroundCheckRadius, 0, GroundMask);
     }
 
-    public void changeThroughPortal(GameMode gameMode, Speeds speed, Gravity gravity, int state)
+    public void PortalChanges(GameMode newGameMode, bool changeMode, Speeds newSpeed, bool changeSpeed, int gravityUP, bool changeGravity)
     {
-        if(state == 0)
+        if(changeMode)
         {
-            CurrentSpeed = speed;
+            CurrGameMode = newGameMode;
         }
-        else if (state == 1)
+        
+        if (changeSpeed)
         {
-            CurrGameMode = gameMode;
+            CurrentSpeed = newSpeed;
         }
-        else if(state == 2)
+        if(changeGravity)
         {
-            rb.gravityScale = Mathf.Abs(rb.gravityScale) * (int)gravity;
+            rb.gravityScale = Mathf.Abs(rb.gravityScale) * (int)gravityUP;
+
+            if(gravityUP == -1) Sprite.localScale = new Vector3(1, -1 , 1);
+            else Sprite.localScale = new Vector3(1, 1, 1);
         }
     }
 }
