@@ -8,7 +8,6 @@ public enum GameMode { Cube, Ship};
 public class Movement : MonoBehaviour
 {
     public Speeds CurrentSpeed;
-    public Transform GroundCheckTransform;
     public Transform Sprite;
     public LayerMask GroundMask;
     public float GroundCheckRadius;
@@ -79,8 +78,18 @@ public class Movement : MonoBehaviour
 
     bool OnGround()
     {
-        Vector3 offset = (Gravity == -1) ? Vector3.up : Vector3.zero;
-        return Physics2D.OverlapBox(GroundCheckTransform.position + offset, Vector2.right * 1.1f + Vector2.up * GroundCheckRadius, 0, GroundMask);
+        return Physics2D.OverlapBox(transform.position + Vector3.down * Gravity * 0.5f, Vector2.right * 1.1f + Vector2.up * GroundCheckRadius, 0, GroundMask);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.CompareTag("Ground"))
+        {
+            foreach(ContactPoint2D point in collision.contacts)
+            {
+                if (point.normal.y < 0.7f) GameOver();
+            }
+        }
     }
 
     bool TouchingWall()
@@ -108,5 +117,11 @@ public class Movement : MonoBehaviour
             if(gravityUP == -1) Sprite.localScale = new Vector3(1, -1 , 1);
             else Sprite.localScale = new Vector3(1, 1, 1);
         }
+    }
+
+    void GameOver()
+    {
+        Time.timeScale = 0;
+        enabled = false;
     }
 }
