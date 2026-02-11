@@ -90,6 +90,13 @@ public class Movement : MonoBehaviour
                 if (point.normal.y < 0.7f) GameOver();
             }
         }
+        if(collision.gameObject.CompareTag("Spike"))
+        {
+            foreach(ContactPoint2D coll in collision.contacts)
+            {
+                if (coll.normal.x < 1f) GameOver();
+            }
+        }
     }
 
     bool TouchingWall()
